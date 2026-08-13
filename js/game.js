@@ -82,7 +82,7 @@ function startTimer() {
     state.timeLeft -= 1;
     updateTimerDisplay();
     if (state.timeLeft <= 0) {
-      endRound(false, 'time');
+      endRound('time');
     }
   }, 1000);
 }
@@ -109,17 +109,10 @@ function submitAnswer() {
   const correct = val === p.answer;
 
   state.results[state.index] = correct ? 'correct' : 'wrong';
-
-  if (!correct) {
-    flashFeedback(`Wrong — it was ${p.answer}`, false);
-    endRound(false, 'wrong');
-    return;
-  }
-
-  flashFeedback('Correct', true);
+  flashFeedback(correct ? 'Correct' : `Wrong — it was ${p.answer}`, correct);
 
   if (state.index === state.problems.length - 1) {
-    endRound(true, 'finished');
+    endRound('finished');
     return;
   }
 
@@ -132,24 +125,25 @@ function flashFeedback(msg, ok) {
   el.feedback.className = `feedback ${ok ? 'ok' : 'bad'}`;
 }
 
-function endRound(won, reason) {
+function endRound(reason) {
   if (state.ended) return;
   state.ended = true;
   state.endedAt = Date.now();
   clearInterval(state.timerId);
-  showResult(won, reason);
+  showResult(reason);
 }
 
-function showResult(won, reason) {
+function showResult(reason) {
   const cfg = LEVELS[state.level];
   const correctCount = state.results.filter((r) => r === 'correct').length;
   const elapsed = Math.round((state.endedAt - state.startedAt) / 1000);
 
-  el.resultTitle.textContent = won
-    ? 'Solved it!'
-    : reason === 'time'
-    ? 'Out of time'
-    : 'Wrong answer';
+  el.resultTitle.textContent =
+    reason === 'time'
+      ? 'Out of time'
+      : correctCount === cfg.count
+      ? 'Perfect round!'
+      : 'Round complete';
 
   el.resultGrid.innerHTML = '';
   state.results.forEach((r) => {

@@ -9,7 +9,7 @@ function copyResult(state, LEVELS) {
     .join('');
 
   const text =
-    `Math Wordle #${num} — ${cfg.label}\n` +
+    `Splitsecond #${num} — ${cfg.label}\n` +
     `${correctCount}/${cfg.count} in ${elapsed}s\n` +
     `${grid}`;
 
