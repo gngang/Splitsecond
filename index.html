@@ -4,6 +4,9 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Splitsecond</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet" />
 <link rel="stylesheet" href="css/style.css" />
 </head>
 <body>
@@ -14,7 +17,7 @@
   </header>
 
   <section id="screen-select" class="screen">
-    <p class="prompt">Pick a level. Answer correctly before the timer runs out — one wrong answer ends the round.</p>
+    <p class="prompt">Pick a level. Answer as many as you can before the timer runs out.</p>
     <div class="level-grid">
       <button class="level-btn" data-level="easy">
         <span class="level-name">Easy</span>
@@ -35,7 +38,10 @@
     <div class="game-top">
       <span id="level-label" class="badge"></span>
       <span class="q-progress">Q<span id="q-index">1</span>/<span id="q-count">10</span></span>
-      <span id="timer" class="timer">60s</span>
+      <span class="timer-wrap">
+        <span class="timer-icon" aria-hidden="true">⏱</span>
+        <span id="timer" class="timer">60s</span>
+      </span>
     </div>
     <div class="question-box">
       <div id="question" class="question"></div>
@@ -50,6 +56,9 @@
     <div id="result-grid" class="result-grid"></div>
     <p id="result-score" class="result-line"></p>
     <p id="result-time" class="result-line"></p>
+    <div class="future-slot">
+      <p class="future-slot-label">Streak &amp; leaderboard — coming soon</p>
+    </div>
     <div class="result-actions">
       <button id="share-btn">Share result</button>
       <button id="play-again-btn">Try another level</button>
