@@ -108,6 +108,30 @@ h1 {
   margin-bottom: 24px;
   font-size: 14px;
 }
+.game-top-left { display: flex; align-items: center; gap: 10px; }
+.back-btn {
+  width: 32px;
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 2px solid var(--ink);
+  border-radius: 8px;
+  background: transparent;
+  color: var(--ink);
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+  transition: transform 0.1s ease, border-color 0.15s ease, color 0.15s ease;
+}
+.back-btn:hover { border-color: var(--red); color: var(--red); }
+.back-btn:active { transform: translateY(1px); }
+.back-btn:focus-visible {
+  outline: none;
+  border-color: var(--red);
+  box-shadow: 0 0 0 3px rgba(228, 67, 47, 0.25);
+}
 .badge {
   background: var(--red);
   color: #fff;
@@ -146,6 +170,25 @@ h1 {
   letter-spacing: -0.01em;
   color: var(--ink);
   margin-bottom: 24px;
+}
+
+/* Column-arithmetic layout for simple two-operand +/-/× problems only —
+   assigned per-question in game.js via problem.stackable, not by level. */
+.question.question--stacked {
+  display: inline-grid;
+  grid-template-columns: auto auto;
+  column-gap: 10px;
+  row-gap: 4px;
+  justify-content: center;
+}
+.question--stacked .stack-a { grid-column: 2; grid-row: 1; text-align: right; }
+.question--stacked .stack-op { grid-column: 1; grid-row: 2; text-align: left; }
+.question--stacked .stack-b { grid-column: 2; grid-row: 2; text-align: right; }
+.question--stacked .stack-rule {
+  grid-column: 1 / span 2;
+  grid-row: 3;
+  border-top: 3px solid var(--ink);
+  margin-top: 6px;
 }
 #answer-input {
   width: 100%;

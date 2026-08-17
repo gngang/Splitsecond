@@ -1,10 +1,16 @@
 // Problem generators. Each takes an rng() -> [0,1) function and returns
-// { text, answer }. Called sequentially against one rng instance so the
-// same level on the same date always yields the same 10 problems, in order.
+// { text, answer, stackable }, plus { a, op, b } when stackable is true.
+// Called sequentially against one rng instance so the same level on the
+// same date always yields the same problems, in order.
 //
 // Level bands: easy = elementary, medium = middle/high school,
 // hard = adult. Hard is only harder via bigger numbers/more steps, not
 // a tighter clock — timers are shared config in game.js.
+//
+// stackable is shape-based, not level-based: only plain two-operand
+// +, -, × problems get it (traditional column-arithmetic layout).
+// Division and any multi-term expression are always inline, regardless
+// of level — see game.js renderQuestion.
 
 function randInt(rng, min, max) {
   return Math.floor(rng() * (max - min + 1)) + min;
@@ -21,19 +27,19 @@ const Generators = {
     if (op === '*') {
       const a = randInt(rng, 2, 10);
       const b = randInt(rng, 2, 10);
-      return { text: `${a} × ${b}`, answer: a * b };
+      return { text: `${a} × ${b}`, answer: a * b, stackable: true, a, op: '×', b };
     }
     if (op === '/') {
       const b = randInt(rng, 2, 10);
       const answer = randInt(rng, 2, 10);
       const a = b * answer; // guarantees a clean integer division
-      return { text: `${a} ÷ ${b}`, answer };
+      return { text: `${a} ÷ ${b}`, answer, stackable: false };
     }
     let a = randInt(rng, 1, 50);
     let b = randInt(rng, 1, 50);
     if (op === '-' && b > a) [a, b] = [b, a]; // keep it non-negative
     const answer = op === '+' ? a + b : a - b;
-    return { text: `${a} ${op} ${b}`, answer };
+    return { text: `${a} ${op} ${b}`, answer, stackable: true, a, op, b };
   },
 
   // Middle/high school: two-step order-of-operations, negatives,
@@ -47,31 +53,31 @@ const Generators = {
       const c = randInt(rng, 1, 20);
       const sign = pick(rng, ['+', '-']);
       const answer = sign === '+' ? a * b + c : a * b - c;
-      return { text: `${a} × ${b} ${sign} ${c}`, answer };
+      return { text: `${a} × ${b} ${sign} ${c}`, answer, stackable: false };
     }
     if (shape === 'sq') {
       const a = randInt(rng, 2, 15);
       const c = randInt(rng, 1, 30);
       const sign = pick(rng, ['+', '-']);
       const answer = sign === '+' ? a * a + c : a * a - c;
-      return { text: `${a}² ${sign} ${c}`, answer };
+      return { text: `${a}² ${sign} ${c}`, answer, stackable: false };
     }
     if (shape === 'negative_sub') {
       const a = randInt(rng, 1, 50);
       const b = randInt(rng, 1, 50); // no swap — answer can go negative
-      return { text: `${a} - ${b}`, answer: a - b };
+      return { text: `${a} - ${b}`, answer: a - b, stackable: true, a, op: '-', b };
     }
     if (shape === 'percent') {
       const p = pick(rng, [10, 20, 25, 50]);
       const n = randInt(rng, 1, 20) * 20; // multiple of 20 divides all of the above cleanly
-      return { text: `${p}% of ${n}`, answer: (p * n) / 100 };
+      return { text: `${p}% of ${n}`, answer: (p * n) / 100, stackable: false };
     }
     // linear_eq: mx + c = result, solve for x
     const m = randInt(rng, 2, 12);
     const x = randInt(rng, 2, 15);
     const c = randInt(rng, 1, 30);
     const result = m * x + c;
-    return { text: `${m}x + ${c} = ${result}`, answer: x };
+    return { text: `${m}x + ${c} = ${result}`, answer: x, stackable: false };
   },
 
   // Adult: same problem shapes conceptually, just bigger — 2-digit
@@ -82,37 +88,37 @@ const Generators = {
     if (shape === 'mul2digit') {
       const a = randInt(rng, 11, 99);
       const b = randInt(rng, 11, 99);
-      return { text: `${a} × ${b}`, answer: a * b };
+      return { text: `${a} × ${b}`, answer: a * b, stackable: true, a, op: '×', b };
     }
     if (shape === 'three_step') {
       const a = randInt(rng, 2, 20);
       const b = randInt(rng, 2, 20);
       const c = randInt(rng, 2, 12);
       const d = randInt(rng, 1, 50);
-      return { text: `(${a} + ${b}) × ${c} - ${d}`, answer: (a + b) * c - d };
+      return { text: `(${a} + ${b}) × ${c} - ${d}`, answer: (a + b) * c - d, stackable: false };
     }
     if (shape === 'cube') {
       const a = randInt(rng, 3, 12);
       const c = randInt(rng, 1, 50);
       const sign = pick(rng, ['+', '-']);
       const answer = sign === '+' ? a * a * a + c : a * a * a - c;
-      return { text: `${a}³ ${sign} ${c}`, answer };
+      return { text: `${a}³ ${sign} ${c}`, answer, stackable: false };
     }
     if (shape === 'percent_big') {
       const p = pick(rng, [10, 20, 25, 50, 75]);
       const n = randInt(rng, 5, 100) * 20; // multiple of 20 divides all of the above cleanly
-      return { text: `${p}% of ${n}`, answer: (p * n) / 100 };
+      return { text: `${p}% of ${n}`, answer: (p * n) / 100, stackable: false };
     }
     // div_big: multi-digit division
     const divisor = randInt(rng, 11, 30);
     const answer = randInt(rng, 11, 40);
     const a = divisor * answer; // guarantees a clean integer division
-    return { text: `${a} ÷ ${divisor}`, answer };
+    return { text: `${a} ÷ ${divisor}`, answer, stackable: false };
   },
 };
 
-// Build the fixed 10-question set for a level, given an rng.
-function buildRound(level, rng, count = 10) {
+// Build the fixed question set for a level, given an rng.
+function buildRound(level, rng, count = 5) {
   const gen = Generators[level];
   const out = [];
   for (let i = 0; i < count; i++) out.push(gen(rng));
